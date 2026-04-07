@@ -78,7 +78,7 @@ function generate(){
 
     var certID = "CTX" + Math.floor(Math.random()*1000000);
 
-    // Save to sheet (ignore error)
+    // 🔥 SAVE DATA (SAFE)
     fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec", {
       method: "POST",
       body: JSON.stringify({name, course, certID})
@@ -89,17 +89,44 @@ function generate(){
 
     var img = new Image();
 
-    img.src = "excel.png"; // test ke liye ek image use kar
+    img.src = "excel.png"; // base certificate image
 
     img.onload = function(){
+      drawCertificate(img);
+    };
 
-      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    // 🔥 fallback if image not load
+    img.onerror = function(){
+      drawCertificate(null);
+    };
 
-      ctx.font = "50px Arial";
-      ctx.fillStyle = "black";
+    function drawCertificate(img){
+
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      if(img){
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+      }
+
+      // NAME
+      ctx.font = "60px 'Allura'";
+      ctx.fillStyle = "#0b3d2e";
       ctx.textAlign = "center";
       ctx.fillText(name, canvas.width/2, 600);
 
+      // DATE
+      var today = new Date().toLocaleDateString();
+      ctx.font = "18px Arial";
+      ctx.fillStyle = "#000";
+      ctx.fillText("Issued: " + today, 1100, 820);
+
+      // ID
+      ctx.fillText("ID: " + certID, 200, 820);
+
+      // QR
       var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
 
       var qr = new Image();
@@ -107,18 +134,15 @@ function generate(){
 
       qr.onload = function(){
 
-        ctx.drawImage(qr, 1000, 650, 120, 120);
+        ctx.drawImage(qr, 1080, 640, 120, 120);
 
+        // DOWNLOAD
         var link = document.createElement("a");
-        link.download = "certificate.png";
+        link.download = name + "_certificate.png";
         link.href = canvas.toDataURL();
         link.click();
       };
 
-    };
-
-    img.onerror = function(){
-      alert("Image not loading. Check excel.png in repo.");
     }
 
   } catch(e){
