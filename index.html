@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f9fafb;
+      background: linear-gradient(135deg, #0b3d2e, #0f766e);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -21,7 +21,7 @@
       background: #ffffff;
       padding: 30px;
       border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
       text-align: center;
     }
 
@@ -145,28 +145,30 @@ function generateCertificate() {
     ctx.font = "bold 18px Arial";
     ctx.fillText("ID: " + certID, 200, 820);
 
-    // 🔥 QR CODE
-   var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
+    // 🔥 QR CODE (FINAL FIXED)
+    var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
 
     var qr = new Image();
-    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + verifyURL;
+
+    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
 
     qr.onload = function(){
 
-      // QR Position (bottom right)
-      ctx.drawImage(qr, 1100, 650, 120, 120);
+      // QR Position
+      ctx.drawImage(qr, 1080, 640, 130, 130);
 
       // Border
-      ctx.strokeRect(1100, 650, 120, 120);
+      ctx.strokeRect(1080, 640, 130, 130);
 
       // Text
       ctx.font = "14px Arial";
-      ctx.fillText("Scan to Verify", 1100, 790);
+      ctx.fillStyle = "#000";
+      ctx.fillText("Scan to Verify", 1080, 790);
 
-      // DOWNLOAD AFTER QR LOAD
+      // DOWNLOAD
       var link = document.createElement('a');
       link.download = name + "_certificate.png";
-      link.href = canvas.toDataURL();
+      link.href = canvas.toDataURL("image/png");
       link.click();
     };
 
