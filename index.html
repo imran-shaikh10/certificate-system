@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Certificate Generator</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 420px;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #111;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #0b3d2e;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .preview {
+      margin-top: 20px;
+      background: #f3f4f6;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    canvas {
+      width: 100%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>🎓 Get Your Certificate</h2>
+
+  <input type="text" id="name" placeholder="Enter your name">
+
+  <select id="course">
+    <option value="Advance Excel">Advance Excel</option>
+    <option value="SQL Server">SQL Server</option>
+    <option value="Power BI">Power BI</option>
+    <option value="Python">Python</option>
+  </select>
+
+  <button onclick="generateCertificate()">Download Certificate</button>
+
+  <div class="preview">
+    <canvas id="canvas" width="1400" height="1000"></canvas>
+  </div>
+
+</div>
+
+<script>
+
+function generateCertificate() {
+
+  var name = document.getElementById("name").value;
+  var course = document.getElementById("course").value;
+
+  if(name === ""){
+    alert("Enter your name");
+    return;
+  }
+
+  var certID = "CTX" + Math.floor(Math.random()*1000000);
+
+  // 🔥 SEND DATA TO GOOGLE SHEET
+  fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec", {
+    method: "POST",
+    body: JSON.stringify({
+      name: name,
+      course: course,
+      certID: certID
+    })
+  });
+
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+
+  var img = new Image();
+
+  var certImages = {
+    "Advance Excel": "excel.png",
+    "SQL Server": "sql.png",
+    "Power BI": "powerbi.png",
+    "Python": "python.png"
+  };
+
+  img.src = certImages[course];
+
+  img.onload = function(){
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    // NAME
+    ctx.font = "70px 'Allura'";
+    ctx.fillStyle = "#0b3d2e";
+    ctx.textAlign = "center";
+    ctx.fillText(name, canvas.width/2, 600);
+
+    // DATE
+    var today = new Date().toLocaleDateString();
+    ctx.font = "bold 20px Arial";
+    ctx.fillText("Issued: " + today, 1100, 820);
+
+    // CERTIFICATE ID
+    ctx.font = "bold 18px Arial";
+    ctx.fillText("ID: " + certID, 200, 820);
+
+    // 🔥 QR CODE
+    var verifyURL = "https://yourdomain.com/verify.html?id=" + certID;
+
+    var qr = new Image();
+    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + verifyURL;
+
+    qr.onload = function(){
+
+      // QR Position (bottom right)
+      ctx.drawImage(qr, 1100, 650, 120, 120);
+
+      // Border
+      ctx.strokeRect(1100, 650, 120, 120);
+
+      // Text
+      ctx.font = "14px Arial";
+      ctx.fillText("Scan to Verify", 1100, 790);
+
+      // DOWNLOAD AFTER QR LOAD
+      var link = document.createElement('a');
+      link.download = name + "_certificate.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    };
+
+  }
+}
+
+</script>
+
+</body>
+</html>

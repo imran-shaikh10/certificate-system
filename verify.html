@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Certificate Verification</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0b3d2e, #0f766e);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #111;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      width: 380px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    .status {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .valid {
+      color: #16a34a;
+    }
+
+    .invalid {
+      color: #dc2626;
+    }
+
+    .info {
+      margin-top: 15px;
+      text-align: left;
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .info p {
+      margin: 6px 0;
+    }
+
+    .loading {
+      font-size: 18px;
+      color: #555;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+  <h2>🔍 Certificate Verification</h2>
+
+  <div id="result" class="loading">Checking certificate...</div>
+
+</div>
+
+<script>
+
+window.onload = function(){
+
+  const params = new URLSearchParams(window.location.search);
+  const certID = params.get("id");
+
+  if(!certID){
+    document.getElementById("result").innerHTML = "<span class='invalid'>❌ No Certificate ID</span>";
+    return;
+  }
+
+  verify(certID);
+}
+
+function verify(certID){
+
+  fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec")
+    .then(res => res.json())
+    .then(data => {
+
+      let found = false;
+
+      for(let i = 1; i < data.length; i++){
+
+        let name = data[i][0];
+        let course = data[i][1];
+        let id = data[i][2];
+        let date = data[i][3];
+
+        if(id === certID){
+
+          found = true;
+
+          document.getElementById("result").innerHTML = `
+            <div class="status valid">✅ Certificate Verified</div>
+
+            <div class="info">
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Course:</strong> ${course}</p>
+              <p><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+              <p><strong>ID:</strong> ${certID}</p>
+            </div>
+          `;
+          break;
+        }
+      }
+
+      if(!found){
+        document.getElementById("result").innerHTML = `
+          <div class="status invalid">❌ Invalid Certificate</div>
+        `;
+      }
+
+    })
+    .catch(err => {
+      document.getElementById("result").innerHTML = `
+        <div class="status invalid">⚠️ Server Error</div>
+      `;
+    });
+
+}
+
+</script>
+
+</body>
+</html>
