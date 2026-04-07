@@ -146,7 +146,7 @@ function generateCertificate() {
     ctx.fillText("ID: " + certID, 200, 820);
 
     // 🔥 QR CODE
-    var verifyURL = "https://yourdomain.com/verify.html?id=" + certID;
+   var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
 
     var qr = new Image();
     qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + verifyURL;
