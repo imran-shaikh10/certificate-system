@@ -1,78 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Certificate Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #0b3d2e;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h2>🎓 Generate Certificate</h2>
+
+  <input type="text" id="name" placeholder="Enter name">
+
+  <select id="course">
+    <option>Advance Excel</option>
+    <option>SQL Server</option>
+    <option>Power BI</option>
+    <option>Python</option>
+  </select>
+
+  <button onclick="generate()">Download</button>
+
+  <canvas id="canvas" width="1400" height="1000" style="display:none;"></canvas>
+
+</div>
+
 <script>
 
-function generateCertificate(){
+function generate(){
 
-  var name = document.getElementById("name").value;
-  var course = document.getElementById("course").value;
+  try {
 
-  if(!name){
-    alert("Enter your name");
-    return;
-  }
+    var name = document.getElementById("name").value;
+    var course = document.getElementById("course").value;
 
-  var certID = "CTX" + Math.floor(Math.random()*1000000);
+    if(!name){
+      alert("Enter name");
+      return;
+    }
 
-  // Sheet save (safe)
-  fetch("https://script.google.com/macros/s/AKfycbyX8ByikUzpKzzOV2_5246Cu3BR62opzDYHBTuOdvz8Q5ikKagjZNzZHDm1wycOZ150/exec", {
-    method: "POST",
-    body: JSON.stringify({
-      name: name,
-      course: course,
-      certID: certID
-    })
-  }).catch(() => console.log("Sheet error ignored"));
+    var certID = "CTX" + Math.floor(Math.random()*1000000);
 
-  var canvas = document.getElementById("canvas");
-  var ctx = canvas.getContext("2d");
+    // Save to sheet (ignore error)
+    fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec", {
+      method: "POST",
+      body: JSON.stringify({name, course, certID})
+    }).catch(()=>{});
 
-  var certImages = {
-    "Advance Excel": "excel.png",
-    "SQL Server": "sql.png",
-    "Power BI": "powerbi.png",
-    "Python": "python.png"
-  };
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
 
-  var img = new Image();
-  img.src = certImages[course];
+    var img = new Image();
 
-  // 🔥 IMPORTANT FIX
-  img.onerror = function(){
-    alert("Image not found! Check file names in GitHub.");
-  };
+    img.src = "excel.png"; // test ke liye ek image use kar
 
-  img.onload = function(){
+    img.onload = function(){
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
-    ctx.font = "60px Arial";
-    ctx.fillStyle = "#0b3d2e";
-    ctx.textAlign = "center";
-    ctx.fillText(name, canvas.width/2, 600);
+      ctx.font = "50px Arial";
+      ctx.fillStyle = "black";
+      ctx.textAlign = "center";
+      ctx.fillText(name, canvas.width/2, 600);
 
-    var today = new Date().toLocaleDateString();
-    ctx.font = "18px Arial";
-    ctx.fillText("Issued: " + today, 1100, 820);
+      var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
 
-    ctx.fillText("ID: " + certID, 200, 820);
+      var qr = new Image();
+      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
 
-    var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
+      qr.onload = function(){
 
-    var qr = new Image();
-    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
+        ctx.drawImage(qr, 1000, 650, 120, 120);
 
-    qr.onload = function(){
+        var link = document.createElement("a");
+        link.download = "certificate.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      };
 
-      ctx.drawImage(qr, 1080, 640, 120, 120);
-
-      var link = document.createElement("a");
-      link.download = name + "_certificate.png";
-      link.href = canvas.toDataURL();
-      link.click();
     };
 
-  };
+    img.onerror = function(){
+      alert("Image not loading. Check excel.png in repo.");
+    }
+
+  } catch(e){
+    alert("Error: " + e.message);
+  }
 
 }
 
 </script>
+
+</body>
+</html>
