@@ -140,10 +140,168 @@ qr.onload = function(){
 // 🔥 FORCE DOWNLOAD (NO WAIT)
 setTimeout(function(){
 
+  <!DOCTYPE html>
+<html>
+<head>
+  <title>Certificate Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #0b3d2e;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h2>🎓 Generate Certificate</h2>
+
+  <input type="text" id="name" placeholder="Enter name">
+
+  <select id="course">
+    <option>Advance Excel</option>
+    <option>SQL Server</option>
+    <option>Power BI</option>
+    <option>Python</option>
+  </select>
+
+  <button onclick="generate()">Download</button>
+
+  <canvas id="canvas" width="1400" height="1000" style="display:none;"></canvas>
+
+</div>
+
+<script>
+
+function generate(){
+
+  try {
+
+    var name = document.getElementById("name").value;
+    var course = document.getElementById("course").value;
+
+    if(!name){
+      alert("Enter name");
+      return;
+    }
+
+    var certID = "CTX" + Math.floor(Math.random()*1000000);
+
+    // 🔥 SAVE DATA (SAFE)
+    fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec", {
+      method: "POST",
+      body: JSON.stringify({name, course, certID})
+    }).catch(()=>{});
+
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    var img = new Image();
+
+    img.src = "excel.png"; // base certificate image
+
+    img.onload = function(){
+      drawCertificate(img);
+    };
+
+    // 🔥 fallback if image not load
+    img.onerror = function(){
+      drawCertificate(null);
+    };
+
+    function drawCertificate(img){
+
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      if(img){
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      } else {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+      }
+
+      // NAME
+      ctx.font = "60px 'Allura'";
+      ctx.fillStyle = "#0b3d2e";
+      ctx.textAlign = "center";
+      ctx.fillText(name, canvas.width/2, 600);
+
+      // DATE
+      var today = new Date().toLocaleDateString();
+      ctx.font = "18px Arial";
+      ctx.fillStyle = "#000";
+      ctx.fillText("Issued: " + today, 1100, 820);
+
+      // ID
+      ctx.fillText("ID: " + certID, 200, 820);
+
+      // QR
+      var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
+
+      var qr = new Image();
+      qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
+
+      // QR draw (optional)
+qr.onload = function(){
+  ctx.drawImage(qr, 1080, 640, 120, 120);
+};
+
+// 🔥 FORCE DOWNLOAD (NO WAIT)
+setTimeout(function(){
+
   var link = document.createElement("a");
   link.download = name + "_certificate.png";
   link.href = canvas.toDataURL();
   link.click();
+
+}, 1000);
+
+    }
+
+  } catch(e){
+    alert("Error: " + e.message);
+  }
+
+}
+
+</script>
+
+</body>
+</html>
+
 
 }, 1000);
 
