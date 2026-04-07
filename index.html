@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0b3d2e, #0f766e);
+      background: #f9fafb;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -21,43 +21,30 @@
       background: #ffffff;
       padding: 30px;
       border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
       text-align: center;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #111;
     }
 
     input, select {
       width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
 
     button {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       background: #0b3d2e;
       color: white;
       border: none;
-      border-radius: 10px;
-      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
     }
 
-    .preview {
-      margin-top: 20px;
-      background: #f3f4f6;
-      padding: 10px;
-      border-radius: 12px;
-    }
-
     canvas {
+      margin-top: 15px;
       width: 100%;
       border-radius: 10px;
     }
@@ -68,7 +55,7 @@
 
 <div class="container">
 
-  <h2>🎓 Get Your Certificate</h2>
+  <h2>🎓 Generate Certificate</h2>
 
   <input type="text" id="name" placeholder="Enter your name">
 
@@ -81,27 +68,25 @@
 
   <button onclick="generateCertificate()">Download Certificate</button>
 
-  <div class="preview">
-    <canvas id="canvas" width="1400" height="1000"></canvas>
-  </div>
+  <canvas id="canvas" width="1400" height="1000"></canvas>
 
 </div>
 
 <script>
 
-function generateCertificate() {
+function generateCertificate(){
 
   var name = document.getElementById("name").value;
   var course = document.getElementById("course").value;
 
-  if(name === ""){
+  if(!name){
     alert("Enter your name");
     return;
   }
 
   var certID = "CTX" + Math.floor(Math.random()*1000000);
 
-  // 🔥 SEND DATA TO GOOGLE SHEET
+  // Google Sheet save
   fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec", {
     method: "POST",
     body: JSON.stringify({
@@ -127,52 +112,45 @@ function generateCertificate() {
 
   img.onload = function(){
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
 
-    // NAME
-    ctx.font = "70px 'Allura'";
+    // Name
+    ctx.font = "60px 'Allura'";
     ctx.fillStyle = "#0b3d2e";
     ctx.textAlign = "center";
     ctx.fillText(name, canvas.width/2, 600);
 
-    // DATE
+    // Date
     var today = new Date().toLocaleDateString();
-    ctx.font = "bold 20px Arial";
+    ctx.font = "18px Arial";
     ctx.fillText("Issued: " + today, 1100, 820);
 
-    // CERTIFICATE ID
-    ctx.font = "bold 18px Arial";
+    // ID
+    ctx.font = "16px Arial";
     ctx.fillText("ID: " + certID, 200, 820);
 
-    // 🔥 QR CODE (FINAL FIXED)
+    // QR Code
     var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
 
     var qr = new Image();
-
     qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
 
     qr.onload = function(){
 
-      // QR Position
-      ctx.drawImage(qr, 1080, 640, 130, 130);
+      ctx.drawImage(qr, 1080, 640, 120, 120);
 
-      // Border
-      ctx.strokeRect(1080, 640, 130, 130);
+      ctx.font = "12px Arial";
+      ctx.fillText("Scan to Verify", 1080, 780);
 
-      // Text
-      ctx.font = "14px Arial";
-      ctx.fillStyle = "#000";
-      ctx.fillText("Scan to Verify", 1080, 790);
-
-      // DOWNLOAD
-      var link = document.createElement('a');
+      // Download
+      var link = document.createElement("a");
       link.download = name + "_certificate.png";
-      link.href = canvas.toDataURL("image/png");
+      link.href = canvas.toDataURL();
       link.click();
     };
+  };
 
-  }
 }
 
 </script>
