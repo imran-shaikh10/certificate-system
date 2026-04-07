@@ -25,26 +25,39 @@
       text-align: center;
     }
 
+    h2 {
+      margin-bottom: 20px;
+      color: #111;
+    }
+
     input, select {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       background: #0b3d2e;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
+      font-weight: bold;
       cursor: pointer;
     }
 
+    .preview {
+      margin-top: 20px;
+      background: #f3f4f6;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
     canvas {
-      margin-top: 15px;
       width: 100%;
       border-radius: 10px;
     }
@@ -55,7 +68,7 @@
 
 <div class="container">
 
-  <h2>🎓 Generate Certificate</h2>
+  <h2>🎓 Get Your Certificate</h2>
 
   <input type="text" id="name" placeholder="Enter your name">
 
@@ -68,25 +81,27 @@
 
   <button onclick="generateCertificate()">Download Certificate</button>
 
-  <canvas id="canvas" width="1400" height="1000"></canvas>
+  <div class="preview">
+    <canvas id="canvas" width="1400" height="1000"></canvas>
+  </div>
 
 </div>
 
 <script>
 
-function generateCertificate(){
+function generateCertificate() {
 
   var name = document.getElementById("name").value;
   var course = document.getElementById("course").value;
 
-  if(!name){
+  if(name === ""){
     alert("Enter your name");
     return;
   }
 
   var certID = "CTX" + Math.floor(Math.random()*1000000);
 
-  // Google Sheet save
+  // 🔥 SEND DATA TO GOOGLE SHEET
   fetch("https://script.google.com/macros/s/AKfycbwxIQqZXu-aMbcsniNKg1FAJTWAFVmUmUWapk7HfmrRUzoB4v3R96T0_jRfSfUzQVf0/exec", {
     method: "POST",
     body: JSON.stringify({
@@ -112,45 +127,50 @@ function generateCertificate(){
 
   img.onload = function(){
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    // Name
-    ctx.font = "60px 'Allura'";
+    // NAME
+    ctx.font = "70px 'Allura'";
     ctx.fillStyle = "#0b3d2e";
     ctx.textAlign = "center";
     ctx.fillText(name, canvas.width/2, 600);
 
-    // Date
+    // DATE
     var today = new Date().toLocaleDateString();
-    ctx.font = "18px Arial";
+    ctx.font = "bold 20px Arial";
     ctx.fillText("Issued: " + today, 1100, 820);
 
-    // ID
-    ctx.font = "16px Arial";
+    // CERTIFICATE ID
+    ctx.font = "bold 18px Arial";
     ctx.fillText("ID: " + certID, 200, 820);
 
-    // QR Code
-    var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
+    // 🔥 QR CODE
+   var verifyURL = "https://imran-shaikh10.github.io/certificate-system/verify.html?id=" + certID;
 
     var qr = new Image();
-    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
+    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=" + verifyURL;
 
     qr.onload = function(){
 
-      ctx.drawImage(qr, 1080, 640, 120, 120);
+      // QR Position (bottom right)
+      ctx.drawImage(qr, 1100, 650, 120, 120);
 
-      ctx.font = "12px Arial";
-      ctx.fillText("Scan to Verify", 1080, 780);
+      // Border
+      ctx.strokeRect(1100, 650, 120, 120);
 
-      // Download
-      var link = document.createElement("a");
+      // Text
+      ctx.font = "14px Arial";
+      ctx.fillText("Scan to Verify", 1100, 790);
+
+      // DOWNLOAD AFTER QR LOAD
+      var link = document.createElement('a');
       link.download = name + "_certificate.png";
       link.href = canvas.toDataURL();
       link.click();
     };
-  };
 
+  }
 }
 
 </script>
