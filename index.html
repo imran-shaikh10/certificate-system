@@ -132,16 +132,20 @@ function generate(){
       var qr = new Image();
       qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(verifyURL);
 
-      qr.onload = function(){
+      // QR draw (optional)
+qr.onload = function(){
+  ctx.drawImage(qr, 1080, 640, 120, 120);
+};
 
-        ctx.drawImage(qr, 1080, 640, 120, 120);
+// 🔥 FORCE DOWNLOAD (NO WAIT)
+setTimeout(function(){
 
-        // DOWNLOAD
-        var link = document.createElement("a");
-        link.download = name + "_certificate.png";
-        link.href = canvas.toDataURL();
-        link.click();
-      };
+  var link = document.createElement("a");
+  link.download = name + "_certificate.png";
+  link.href = canvas.toDataURL();
+  link.click();
+
+}, 1000);
 
     }
 
